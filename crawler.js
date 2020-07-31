@@ -29,7 +29,7 @@ const extractPage = async (page) => {
     // Define get content post
     let news = [];
     const getContent = async (html) => ({
-      thumb: html.querySelector("img").src,
+      thumb: html.querySelector("img").getAttribute("data-src"),
       title: html.querySelector("a").innerText,
       link_origin: html.querySelector("a").href,
       datetime: await format(
@@ -68,13 +68,13 @@ const extractContent = async (page, url) => {
 (async () => {
   let results = [];
   const { browser, page } = await init();
-  await page.setRequestInterception(true);
-  page.on("request", (request) => {
-    if (["image"].indexOf(request.resourceType()) != -1) {
-      request.abort();
-    }
-    request.continue();
-  });
+  // await page.setRequestInterception(true);
+  // page.on("request", (request) => {
+  //   if (["image"].indexOf(request.resourceType()) != -1) {
+  //     request.abort();
+  //   }
+  //   request.continue();
+  // });
   await page.goto("https://ncov.moh.gov.vn/web/guest/tin-tuc", {
     waitUntil: "networkidle2",
   });
