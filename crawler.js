@@ -1,12 +1,21 @@
 const puppeteer = require("puppeteer");
 const moment = require("moment");
+const fs = require("fs");
 const TurndownService = require("turndown");
 const turndownService = new TurndownService();
 
 moment.locale("vi");
 
 const init = async () => {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: [
+      "--lang=en-US",
+      "--disk-cache-size=0",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+    ],
+  });
   const page = await browser.newPage();
   return { browser, page };
 };
@@ -53,18 +62,24 @@ const extractContent = async (page, url) => {
   await page.goto(url);
   await page.waitForSelector("#hrefFm");
   let content = await page.evaluate(() =>
-    markdown(
-      document.querySelector(
-        "#_101_INSTANCE_Wgw6CgJiO3vb_7056244 > div > div > section"
-      ).innerHTML
-    )
+    markdown(document.querySelector("div > div > section").innerHTML)
   );
   return content;
 };
 (async () => {
   let results = [];
   const { browser, page } = await init();
-  await page.goto("https://ncov.moh.gov.vn/web/guest/tin-tuc");
+  await page.setRequestInterception(true);
+  page.on("request", (request) => {
+    if (["image"].indexOf(request.resourceType()) != -1) {
+      request.abort();
+    }
+    request.continue();
+  });
+  await page.goto("https://ncov.moh.gov.vn/web/guest/tin-tuc", {
+    waitUntil: "networkidle2",
+  });
+
   await page.exposeFunction("format", (date) => {
     moment(date, "DD/MM/YYYY HH:mm:ss").format("X");
   });
@@ -76,8 +91,9 @@ const extractContent = async (page, url) => {
   let el;
   let className;
   while (true) {
-    await page.waitForSelector("#onesignal-slidedown-allow-button");
-
+    await page.waitForSelector(
+      "#p_p_id_101_INSTANCE_bQiShy2NRK1f_ > div > div > div.clearfix.lfr-pagination > ul"
+    );
     results = results.concat(await extractPage(page));
     el = await page.$(
       "#p_p_id_101_INSTANCE_bQiShy2NRK1f_ > div > div > div.clearfix.lfr-pagination > ul > li:nth-child(2)"
@@ -88,9 +104,19 @@ const extractContent = async (page, url) => {
     if (className.length !== 2) {
       break;
     }
-    console.log(className.length);
     await page.click(
       "#p_p_id_101_INSTANCE_bQiShy2NRK1f_ > div > div > div.clearfix.lfr-pagination > ul > li:nth-child(2)"
     );
   }
+
+  for (let i = 0; i < results.length; i++) {
+    results[i]["id"] = i;
+    results[i]["content"] = await extractContent(
+      page,
+      results[i]["link_origin"]
+    );
+  }
+
+  fs.writeFileSync("data.json", JSON.stringify(results), "utf-8");
+  process.exit();
 })();
