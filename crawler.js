@@ -50,10 +50,9 @@ const extractPage = async (page) => {
     let firstPost = await getContent(wrapperPOST[0]);
     news.push(firstPost);
     let parseNews = [...wrapperPOST[1].querySelectorAll(".row.mb-15")];
-    for (let n of parseNews) {
-      news.push(await getContent(n));
+    for (let i = 0; i < parseNews.length; i++) {
+      news.push(await getContent(parseNews[i]));
     }
-    sleep(1000);
     return news;
   });
 };
@@ -81,7 +80,7 @@ const extractContent = async (page, url) => {
   });
 
   await page.exposeFunction("format", (date) => {
-    moment(date, "DD/MM/YYYY HH:mm:ss").format("X");
+    return moment(date, "DD/MM/YYYY HH:mm:ss").format("X");
   });
   await page.exposeFunction("sleep", sleep);
   await page.exposeFunction("markdown", (html) =>
@@ -118,5 +117,5 @@ const extractContent = async (page, url) => {
   }
 
   fs.writeFileSync("data.json", JSON.stringify(results), "utf-8");
-  process.exit();
+  process.exit(1);
 })();
