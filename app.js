@@ -9,7 +9,7 @@ server.use(middlewares);
 server.use(jsonServer.bodyParser);
 server.use((req, res, next) => {
   if (req.method === "GET") {
-    next();
+    return next();
   }
   return res.jsonp({ msg: "Method not allowed !" });
 });
