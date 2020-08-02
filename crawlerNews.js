@@ -123,7 +123,7 @@ const getAllLink = async (page) => {
     }));
 
     tempLinks.map((link) => {
-      let index = _.findIndex(links, { id: link.id });
+      let index = _.findIndex(links, { link_origin: link.link_origin });
       if (index === -1) {
         links.push({ ...link, isCrawl: false });
       }

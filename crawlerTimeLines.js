@@ -88,7 +88,7 @@ const getAllContent = async (page) => {
     }));
 
     tempTimelines.map((timeline) => {
-      let index = _.findIndex(timelines, { id: timeline.id });
+      let index = _.findIndex(timelines, { time: timeline.time });
       if (index === -1) {
         timelines.push(timeline);
       }
