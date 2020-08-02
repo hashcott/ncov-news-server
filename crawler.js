@@ -80,7 +80,7 @@ const extractContent = async (page, url) => {
     const getContent = async (html) => ({
       thumb:
         html.getElementsByTagName("img").length > 0
-          ? html.getElementsByTagName("img")[0].getAttribute("data-original")
+          ? html.getElementsByTagName("img")[0].src
           : linkImage[Math.floor(Math.random() * 7)],
       title: html.querySelector(".header-title").innerText.trim(),
       datetime: await formatTime(
@@ -175,6 +175,6 @@ const getDatas = async (page) => {
 };
 (async () => {
   const { browser, page } = await init();
-  // await getAllLink(page);
+  await getAllLink(page);
   await getDatas(page);
 })();
