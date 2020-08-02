@@ -170,11 +170,12 @@ const getDatas = async (page) => {
   }
   fs.writeFileSync("link.json", JSON.stringify(links), "utf-8");
   fs.writeFileSync("news.json", JSON.stringify(news), "utf-8");
-  await page.close();
-  await browser.close();
 };
-(async () => {
+
+module.exports.crawlerNews = async () => {
   const { browser, page } = await init();
   await getAllLink(page);
   await getDatas(page);
-})();
+  await page.close();
+  await browser.close();
+};
